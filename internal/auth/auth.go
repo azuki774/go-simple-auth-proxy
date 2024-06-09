@@ -26,7 +26,7 @@ type Authenticater struct {
 }
 
 // 新しい cookie を生成
-func (a *Authenticater) GenerateCookie() *http.Cookie {
+func (a *Authenticater) GenerateCookie() (*http.Cookie, error) {
 	// base64 ( uuid v4 : dt.Unix() )
 	rowv := fmt.Sprintf("%s:%d", uuid.New().String(), time.Now().Unix())
 	v := base64.StdEncoding.EncodeToString([]byte(rowv))
@@ -35,7 +35,12 @@ func (a *Authenticater) GenerateCookie() *http.Cookie {
 		Value: v,
 	}
 	slog.Info("generate cookie", "value", v)
-	return cookie
+	err := a.AuthStore.InsertCookieValue(v)
+	if err != nil {
+		slog.Error("failed to store new cookie", "err", err)
+		return nil, err
+	}
+	return cookie, nil
 }
 
 // cookie が正当かどうか確認

@@ -30,12 +30,12 @@ func (m *mockClient) SendToProxy(r *http.Request) (resp *http.Response, err erro
 	}, nil
 }
 
-func (m *mockAuthenticater) GenerateCookie() *http.Cookie {
+func (m *mockAuthenticater) GenerateCookie() (*http.Cookie, error) {
 	cookie := &http.Cookie{
 		Name:  "token",
 		Value: "example_token_value", // TODO
 	}
-	return cookie
+	return cookie, nil
 }
 
 func (m *mockAuthenticater) IsValidCookie(r *http.Request) (ok bool, err error) {

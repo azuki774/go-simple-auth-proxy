@@ -9,7 +9,7 @@ import (
 
 type ProxyResultCode string
 
-const ProxyResultCookieOK = ProxyResultCode("BasicCookieOK")
+const ProxyResultCookieOK = ProxyResultCode("CookieOK")
 const ProxyResultBasicAuthOK = ProxyResultCode("BasicAuthOK")
 const ProxyResultBasicAuthNG = ProxyResultCode("BasicAuthNG")
 const ProxyResultFetchNG = ProxyResultCode("FetchNG")
@@ -55,7 +55,10 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 
 	// Generate Cookie
-	cookie := s.Authenticater.GenerateCookie()
+	cookie, err := s.Authenticater.GenerateCookie()
+	if err != nil {
+		return ProxyResultInternalError
+	}
 	http.SetCookie(w, cookie)
 
 	respBody := []byte("")

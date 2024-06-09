@@ -69,11 +69,15 @@ func TestCookieManager_IsValidCookie(t *testing.T) {
 
 // 乱数生成なので乱数で作って base64 -d するだけ
 func TestAuthenticater_GenerateCookie(t *testing.T) {
-	var Authenticater Authenticater
+	var Authenticater Authenticater = Authenticater{&mockStore{}}
 
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprintf("#%d", i), func(t *testing.T) {
-			c := Authenticater.GenerateCookie()
+			c, err := Authenticater.GenerateCookie()
+			if err != nil {
+				t.Errorf("TestAuthenticater_GenerateCookie = %v", err)
+			}
+
 			dec, err := base64.StdEncoding.DecodeString(c.Value)
 			if err != nil {
 				t.Errorf("TestAuthenticater_GenerateCookie = %v", err)

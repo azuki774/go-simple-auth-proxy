@@ -15,7 +15,7 @@ type Client interface {
 }
 
 type Authenticater interface {
-	GenerateCookie() *http.Cookie
+	GenerateCookie() (*http.Cookie, error)
 	IsValidCookie(r *http.Request) (ok bool, err error)
 	CheckBasicAuth(r *http.Request) bool
 }
