@@ -46,14 +46,14 @@ func TestCookieManager_IsValidCookie(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &CookieManager{
+			a := &Authenticater{
 				authStore: tt.fields.authStore,
 			}
 
 			// cookie いれる
 			tt.args.r.Header = map[string][]string{"Cookie": []string{"token"}}
 
-			gotOk, err := c.IsValidCookie(tt.args.r)
+			gotOk, err := a.IsValidCookie(tt.args.r)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CookieManager.IsValidCookie() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -15,12 +15,12 @@ type Store interface {
 	CheckCookieValue(value string) bool
 }
 
-type CookieManager struct {
+type Authenticater struct {
 	authStore Store
 }
 
 // 新しい cookie を生成
-func GenerateCookie() *http.Cookie {
+func (a *Authenticater) GenerateCookie() *http.Cookie {
 	cookie := &http.Cookie{
 		Name:  "token",
 		Value: "example_token_value", // TODO
@@ -29,18 +29,18 @@ func GenerateCookie() *http.Cookie {
 }
 
 // cookie が正当かどうか確認
-func (c *CookieManager) IsValidCookie(r *http.Request) (ok bool, err error) {
+func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	token, err := r.Cookie("token")
 	if err != nil {
 		return false, fmt.Errorf("unknown error: %w", err)
 	}
 	v := token.Value
-	ok = c.authStore.CheckCookieValue(v)
+	ok = a.authStore.CheckCookieValue(v)
 
 	return ok, nil
 }
 
-func CheckBasicAuth(r *http.Request) bool {
+func (a *Authenticater) CheckBasicAuth(r *http.Request) bool {
 	// 認証情報取得
 	clientID, clientSecret, ok := r.BasicAuth()
 	if !ok {

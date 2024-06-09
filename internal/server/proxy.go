@@ -1,7 +1,6 @@
 package server
 
 import (
-	"azuki774/go-simple-auth-proxy/internal/auth"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,11 +9,11 @@ import (
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 	// Get Request
 
-	// Authentication
-	cookie := auth.GenerateCookie()
+	// Generate Cookie
+	cookie := s.Authenticater.GenerateCookie()
 
 	// BasicAuth
-	if !auth.CheckBasicAuth(r) {
+	if !s.Authenticater.CheckBasicAuth(r) {
 		w.Header().Add("WWW-Authenticate", `Basic realm="SECRET AREA"`)
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		return

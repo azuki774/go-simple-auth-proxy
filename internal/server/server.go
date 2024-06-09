@@ -15,10 +15,17 @@ import (
 type Client interface {
 	SendToProxy(r *http.Request) (resp *http.Response, err error)
 }
+
+type Authenticater interface {
+	GenerateCookie() *http.Cookie
+	IsValidCookie(r *http.Request) (ok bool, err error)
+	CheckBasicAuth(r *http.Request) bool
+}
 type Server struct {
-	ListenPort string
-	ProxyAddr  string // ex. http://example.com:1234
-	Client     Client
+	ListenPort    string
+	ProxyAddr     string // ex. http://example.com:1234
+	Client        Client
+	Authenticater Authenticater
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
