@@ -42,15 +42,14 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 
 	// To Proxy
 	resp, err := s.Client.SendToProxy(r)
+	if err != nil {
+		return ProxyResultFetchNG
+	}
 	defer func() {
 		if resp.Body != nil {
 			resp.Body.Close() // SendToProxy ではクローズしないのでここでクローズ
 		}
 	}()
-
-	if err != nil {
-		return ProxyResultFetchNG
-	}
 
 	// Proxy Response ==> Server Response
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))

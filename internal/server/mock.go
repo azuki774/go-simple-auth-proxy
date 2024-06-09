@@ -5,14 +5,21 @@ import (
 )
 
 type mockClient struct {
+	err error
 }
 type mockAuthenticater struct {
+	basicok  bool
+	cookieok bool
 }
 
 type mockResponseWriter struct {
 }
 
 func (m *mockClient) SendToProxy(r *http.Request) (resp *http.Response, err error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+
 	return &http.Response{
 		Status:     "200 OK",
 		StatusCode: 200,
@@ -32,11 +39,11 @@ func (m *mockAuthenticater) GenerateCookie() *http.Cookie {
 }
 
 func (m *mockAuthenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
-	return true, nil
+	return m.cookieok, nil
 }
 
 func (m *mockAuthenticater) CheckBasicAuth(r *http.Request) bool {
-	return true
+	return m.basicok
 }
 
 func (m *mockResponseWriter) Header() http.Header {

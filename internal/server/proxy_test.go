@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 )
@@ -26,13 +27,49 @@ func TestServer_proxyMain(t *testing.T) {
 			name: "cookie OK",
 			fields: fields{
 				Client:        &mockClient{},
-				Authenticater: &mockAuthenticater{},
+				Authenticater: &mockAuthenticater{cookieok: true},
 			},
 			args: args{
 				w: &mockResponseWriter{},
 				r: &http.Request{},
 			},
 			wantResultCode: ProxyResultCookieOK,
+		},
+		{
+			name: "cookie NG -> BasicAuth OK",
+			fields: fields{
+				Client:        &mockClient{},
+				Authenticater: &mockAuthenticater{basicok: true},
+			},
+			args: args{
+				w: &mockResponseWriter{},
+				r: &http.Request{},
+			},
+			wantResultCode: ProxyResultBasicAuthOK,
+		},
+		{
+			name: "cookie NG -> BasicAuth NG",
+			fields: fields{
+				Client:        &mockClient{},
+				Authenticater: &mockAuthenticater{},
+			},
+			args: args{
+				w: &mockResponseWriter{},
+				r: &http.Request{},
+			},
+			wantResultCode: ProxyResultBasicAuthNG,
+		},
+		{
+			name: "Fetch NG",
+			fields: fields{
+				Client:        &mockClient{err: errors.New("nanka error")},
+				Authenticater: &mockAuthenticater{basicok: true},
+			},
+			args: args{
+				w: &mockResponseWriter{},
+				r: &http.Request{},
+			},
+			wantResultCode: ProxyResultFetchNG,
 		},
 	}
 	for _, tt := range tests {
