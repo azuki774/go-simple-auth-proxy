@@ -43,15 +43,38 @@ jobs:
           bin/go-simple-auth-proxy start &
           sleep 5s
 
-      - name: Test 1 (No cookie or basicauth) - 503
+      - name: Scenario 1 (No cookie or basicauth) - 401
         run: |
           curl -I http:/localhost:8080 > output.log
           grep 'HTTP/1.1 401 Unauthorized' output.log
+          curl -I http:/localhost:8080 > output.log
+          grep 'HTTP/1.1 401 Unauthorized' output.log
 
-      - name: Test 2 (no cookie, basicauth) - 200
+      - name: Scenario 2 (no cookie, basicauth) - 200
         run: |
           curl -I -u user:pass http:/localhost:8080 > output.log
           curl -u user:pass http:/localhost:8080 >> output.log
+          grep 'HTTP/1.1 200 OK' output.log
+          grep '<title>Welcome to nginx!</title>' output.log
+
+      - name: Scenario 3 (save cookie, no cookie, basicauth) - 200
+        run: |
+          curl -I -u user:pass -c cookie.txt http:/localhost:8080 > output.log
+          curl -u user:pass http:/localhost:8080 >> output.log
+          grep 'HTTP/1.1 200 OK' output.log
+          grep '<title>Welcome to nginx!</title>' output.log
+
+      - name: Scenario 4 (No cookie or basicauth) - 401
+        run: |
+          curl -I http:/localhost:8080 > output.log
+          grep 'HTTP/1.1 401 Unauthorized' output.log
+          curl -I http:/localhost:8080 > output.log
+          grep 'HTTP/1.1 401 Unauthorized' output.log
+
+      - name: Scenario 5 (use cookie, no basicauth) - 200
+        run: |
+          curl -I -b cookie.txt http:/localhost:8080 > output.log
+          curl -b cookie.txt http:/localhost:8080 >> output.log
           grep 'HTTP/1.1 200 OK' output.log
           grep '<title>Welcome to nginx!</title>' output.log
 
