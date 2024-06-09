@@ -20,7 +20,7 @@ func (s *Server) Start(ctx context.Context) (err error) {
 	slog.Info("server start")
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
-	http.HandleFunc("/", proxyHandler) // ハンドラを登録してウェブページを表示させる
+	http.HandleFunc("/", s.proxyHandler) // ハンドラを登録してウェブページを表示させる
 
 	server := &http.Server{
 		Addr:    addr,
