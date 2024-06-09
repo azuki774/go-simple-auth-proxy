@@ -8,19 +8,19 @@ import (
 
 type Store struct {
 	CookieStore []string
-	mu          *sync.Mutex
+	Mu          *sync.Mutex
 }
 
 // CookieStore に値が存在するかを確認する
 func (s *Store) CheckCookieValue(value string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
 	return slices.Contains(s.CookieStore, value)
 }
 
 func (s *Store) InsertCookieValue(value string) (err error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Mu.Lock()
+	defer s.Mu.Unlock()
 	s.CookieStore = append(s.CookieStore, value)
 	slog.Info("add cookie store", "count", len(s.CookieStore))
 	return nil

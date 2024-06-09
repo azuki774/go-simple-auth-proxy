@@ -7,6 +7,7 @@ import (
 	"azuki774/go-simple-auth-proxy/internal/server"
 	"context"
 	"log/slog"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,7 @@ to quickly create a Cobra application.`,
 		srv := server.Server{
 			ListenPort:    "8080",
 			Client:        &client.Client{ProxyAddr: "http://localhost:8888"},
-			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{}},
+			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}}},
 		}
 
 		srv.Start(context.Background())

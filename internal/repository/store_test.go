@@ -8,7 +8,6 @@ import (
 func TestStore_CheckCookieValue(t *testing.T) {
 	type fields struct {
 		CookieStore []string
-		mu          *sync.Mutex
 	}
 	type args struct {
 		value string
@@ -44,7 +43,7 @@ func TestStore_CheckCookieValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Store{
 				CookieStore: tt.fields.CookieStore,
-				mu:          &sync.Mutex{}, // テストのため新規作成
+				Mu:          &sync.Mutex{}, // テストのため新規作成
 			}
 			if got := s.CheckCookieValue(tt.args.value); got != tt.want {
 				t.Errorf("Store.CheckCookieValue() = %v, want %v", got, tt.want)
@@ -56,7 +55,6 @@ func TestStore_CheckCookieValue(t *testing.T) {
 func TestStore_InsertCookieValue(t *testing.T) {
 	type fields struct {
 		CookieStore []string
-		mu          *sync.Mutex
 	}
 	type args struct {
 		value string
@@ -92,7 +90,7 @@ func TestStore_InsertCookieValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Store{
 				CookieStore: tt.fields.CookieStore,
-				mu:          &sync.Mutex{},
+				Mu:          &sync.Mutex{},
 			}
 			if err := s.InsertCookieValue(tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("Store.InsertCookieValue() error = %v, wantErr %v", err, tt.wantErr)
