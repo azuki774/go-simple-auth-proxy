@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+const (
+	// TODO
+	basicuser = "user"
+	basicpass = "pass"
+)
+
 type Store interface {
 	CheckCookieValue(value string) bool
 }
@@ -32,4 +38,14 @@ func (c *CookieManager) IsValidCookie(r *http.Request) (ok bool, err error) {
 	ok = c.authStore.CheckCookieValue(v)
 
 	return ok, nil
+}
+
+func CheckBasicAuth(r *http.Request) bool {
+	// 認証情報取得
+	clientID, clientSecret, ok := r.BasicAuth()
+	if ok != true {
+		// 存在しなければ false
+		return false
+	}
+	return clientID == basicuser && clientSecret == basicpass
 }
