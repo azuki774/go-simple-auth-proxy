@@ -17,10 +17,9 @@ func (s *Store) CheckCookieValue(value string) bool {
 	return slices.Contains(s.CookieStore, value)
 }
 
-func (s *Store) InsertCookieValue() (value string, err error) {
+func (s *Store) InsertCookieValue(value string) (err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	value = "abcde" // TODO
 	s.CookieStore = append(s.CookieStore, value)
-	return value, nil
+	return nil
 }
