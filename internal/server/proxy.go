@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
-	"strings"
 )
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +29,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(resp.StatusCode)
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
@@ -41,7 +42,8 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 // proxy先にリクエストを投げる。呼び出し元で resp を閉じること。
 func (s *Server) sendToProxy(r *http.Request) (resp *http.Response, err error) {
 	baseurl := r.URL.String()
-	newurl := strings.Replace(baseurl, s.MyAddr, s.ProxyAddr, 1)
+	newurl := "http:" + "//" + s.ProxyAddr + baseurl
+	slog.Info("newurl", "url", newurl)
 	client := &http.Client{}
 
 	reqBody, err := io.ReadAll(r.Body)
