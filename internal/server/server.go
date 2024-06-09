@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"azuki774/go-simple-auth-proxy/internal/auth"
 	"azuki774/go-simple-auth-proxy/internal/client"
 )
 
@@ -34,6 +35,7 @@ func (s *Server) Start(ctx context.Context) (err error) {
 	// TODO:
 	s.ListenPort = "8080"
 	s.Client = &client.Client{ProxyAddr: "http://localhost:8888"}
+	s.Authenticater = &auth.Authenticater{}
 	///
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
