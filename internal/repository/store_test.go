@@ -8,7 +8,7 @@ import (
 func TestStore_CheckCookieValue(t *testing.T) {
 	type fields struct {
 		CookieStore []string
-		mu          sync.Mutex
+		mu          *sync.Mutex
 	}
 	type args struct {
 		value string
@@ -23,7 +23,6 @@ func TestStore_CheckCookieValue(t *testing.T) {
 			name: "exist: ZmFkNThkODAtMjdjNi00Y2ExLWE0OTAtOTM3ZjNmODE3YWVl", // fad58d80-27c6-4ca1-a490-937f3f817aee
 			fields: fields{
 				CookieStore: []string{"a", "b", "ZmFkNThkODAtMjdjNi00Y2ExLWE0OTAtOTM3ZjNmODE3YWVl"},
-				mu:          sync.Mutex{},
 			},
 			args: args{
 				value: "ZmFkNThkODAtMjdjNi00Y2ExLWE0OTAtOTM3ZjNmODE3YWVl",
@@ -34,7 +33,6 @@ func TestStore_CheckCookieValue(t *testing.T) {
 			name: "not exist: YmE5MzA4NGQtOWExYy00NjhjLThlZmItZmVlZjU2YmNhODlm", // ba93084d-9a1c-468c-8efb-feef56bca89f
 			fields: fields{
 				CookieStore: []string{"a", "b", "ZmFkNThkODAtMjdjNi00Y2ExLWE0OTAtOTM3ZjNmODE3YWVl"},
-				mu:          sync.Mutex{},
 			},
 			args: args{
 				value: "YmE5MzA4NGQtOWExYy00NjhjLThlZmItZmVlZjU2YmNhODlm",
@@ -46,7 +44,7 @@ func TestStore_CheckCookieValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Store{
 				CookieStore: tt.fields.CookieStore,
-				mu:          tt.fields.mu,
+				mu:          &sync.Mutex{}, // テストのため新規作成
 			}
 			if got := s.CheckCookieValue(tt.args.value); got != tt.want {
 				t.Errorf("Store.CheckCookieValue() = %v, want %v", got, tt.want)
@@ -58,7 +56,6 @@ func TestStore_CheckCookieValue(t *testing.T) {
 func TestStore_InsertCookieValue(t *testing.T) {
 	type fields struct {
 		CookieStore []string
-		mu          sync.Mutex
 	}
 	tests := []struct {
 		name      string
@@ -70,7 +67,7 @@ func TestStore_InsertCookieValue(t *testing.T) {
 			name: "empty -> 1",
 			fields: fields{
 				CookieStore: []string{},
-				mu:          sync.Mutex{},
+
 			},
 			wantErr: false,
 		},
@@ -78,7 +75,7 @@ func TestStore_InsertCookieValue(t *testing.T) {
 			name: "1 -> 2",
 			fields: fields{
 				CookieStore: []string{"abcde"},
-				mu:          sync.Mutex{},
+
 			},
 			wantErr: false,
 		},
@@ -87,7 +84,7 @@ func TestStore_InsertCookieValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Store{
 				CookieStore: tt.fields.CookieStore,
-				mu:          tt.fields.mu,
+				mu:          &sync.Mutex{}, // テストのため新規作成
 			}
 			_, err := s.InsertCookieValue()
 			if (err != nil) != tt.wantErr {

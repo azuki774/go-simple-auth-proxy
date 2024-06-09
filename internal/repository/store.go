@@ -7,7 +7,7 @@ import (
 
 type Store struct {
 	CookieStore []string
-	mu          sync.Mutex
+	mu          *sync.Mutex
 }
 
 // CookieStore に値が存在するかを確認する

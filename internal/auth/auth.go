@@ -5,12 +5,12 @@ import (
 	"net/http"
 )
 
-type AuthStore interface {
+type Store interface {
 	CheckCookieValue(value string) bool
 }
 
 type CookieManager struct {
-	authStore AuthStore
+	authStore Store
 }
 
 // 新しい cookie を生成
