@@ -30,6 +30,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Proxy Response ==> Server Response
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 	w.WriteHeader(resp.StatusCode)
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
