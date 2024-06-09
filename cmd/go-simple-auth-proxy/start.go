@@ -20,7 +20,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("start called")
-		s := server.Server{Port: "8080"}
+		s := server.Server{ListenPort: "8080"}
 		s.Start(context.Background())
 	},
 }

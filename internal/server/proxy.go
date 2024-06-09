@@ -16,7 +16,6 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	if !auth.CheckBasicAuth(r) {
 		w.Header().Add("WWW-Authenticate", `Basic realm="SECRET AREA"`)
 		w.WriteHeader(http.StatusUnauthorized) // 401
-		http.Error(w, "Unauthorized", 401)
 		return
 	}
 

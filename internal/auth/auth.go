@@ -23,7 +23,7 @@ type CookieManager struct {
 func GenerateCookie() *http.Cookie {
 	cookie := &http.Cookie{
 		Name:  "token",
-		Value: "example_token_value",
+		Value: "example_token_value", // TODO
 	}
 	return cookie
 }
@@ -43,7 +43,7 @@ func (c *CookieManager) IsValidCookie(r *http.Request) (ok bool, err error) {
 func CheckBasicAuth(r *http.Request) bool {
 	// 認証情報取得
 	clientID, clientSecret, ok := r.BasicAuth()
-	if ok != true {
+	if !ok {
 		// 存在しなければ false
 		return false
 	}
