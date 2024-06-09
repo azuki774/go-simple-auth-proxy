@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"log/slog"
 	"slices"
 	"sync"
 )
@@ -21,5 +22,6 @@ func (s *Store) InsertCookieValue(value string) (err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.CookieStore = append(s.CookieStore, value)
+	slog.Info("add cookie store", "count", len(s.CookieStore))
 	return nil
 }

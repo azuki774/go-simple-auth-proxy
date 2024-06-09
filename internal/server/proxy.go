@@ -53,7 +53,6 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 
 	// Proxy Response ==> Server Response
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
-	w.WriteHeader(resp.StatusCode)
 
 	// Generate Cookie
 	cookie := s.Authenticater.GenerateCookie()
@@ -67,6 +66,7 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 		}
 	}
 
+	w.WriteHeader(resp.StatusCode)
 	fmt.Fprint(w, string(respBody))
 	return resultCode
 }
