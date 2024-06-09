@@ -2,11 +2,14 @@ package server
 
 import (
 	"azuki774/go-simple-auth-proxy/internal/auth"
+	"bytes"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 )
 
-func proxyHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 	// Get Request
 
 	// Authentication
@@ -19,7 +22,46 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Response
+	// To Proxy
+	resp, err := s.sendToProxy(r)
+	defer resp.Body.Close()
+	if err != nil {
+		return
+	}
+
+	// Proxy Response ==> Server Response
+	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
+	w.WriteHeader(resp.StatusCode)
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
 	http.SetCookie(w, cookie)
-	fmt.Fprintf(w, "Hello, World\n")
+	fmt.Fprint(w, string(respBody))
+}
+
+// proxy先にリクエストを投げる。呼び出し元で resp を閉じること。
+func (s *Server) sendToProxy(r *http.Request) (resp *http.Response, err error) {
+	baseurl := r.URL.String()
+	newurl := s.ProxyAddr + baseurl
+	slog.Info("newurl", "url", newurl)
+	client := &http.Client{}
+
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(r.Method, newurl, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err = client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	// 呼び出し元で resp を閉じること: defer resp.Body.Close()
+	return resp, nil
 }
