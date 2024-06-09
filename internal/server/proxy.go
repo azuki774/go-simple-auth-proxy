@@ -9,7 +9,8 @@ import (
 
 type ProxyResultCode string
 
-const ProxyResultOK = ProxyResultCode("OK")
+const ProxyResultCookieOK = ProxyResultCode("BasicCookieOK")
+const ProxyResultBasicAuthOK = ProxyResultCode("BasicAuthOK")
 const ProxyResultBasicAuthNG = ProxyResultCode("BasicAuthNG")
 const ProxyResultFetchNG = ProxyResultCode("FetchNG")
 const ProxyResultInternalError = ProxyResultCode("InternalError")
@@ -21,9 +22,19 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode ProxyResultCode) {
 	// Get Cookie
+	// Cookie Check
+	cookieOk, err := s.Authenticater.IsValidCookie(r)
+	if err != nil {
+		slog.Error("get cookie", "error", err)
+		return ProxyResultInternalError
+	}
 
-	// BasicAuth
-	if !s.Authenticater.CheckBasicAuth(r) {
+	if cookieOk {
+		resultCode = ProxyResultCookieOK
+	} else if s.Authenticater.CheckBasicAuth(r) { // BasicAuth Check
+		resultCode = ProxyResultBasicAuthOK
+	} else {
+		// all NG
 		w.Header().Add("WWW-Authenticate", `Basic realm="SECRET AREA"`)
 		w.WriteHeader(http.StatusUnauthorized) // 401
 		return ProxyResultBasicAuthNG
@@ -31,7 +42,12 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 
 	// To Proxy
 	resp, err := s.Client.SendToProxy(r)
-	defer resp.Body.Close() // SendToProxy ではクローズしないのでここでクローズ
+	defer func() {
+		if resp.Body != nil {
+			resp.Body.Close() // SendToProxy ではクローズしないのでここでクローズ
+		}
+	}()
+
 	if err != nil {
 		return ProxyResultFetchNG
 	}
@@ -44,11 +60,14 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	cookie := s.Authenticater.GenerateCookie()
 	http.SetCookie(w, cookie)
 
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ProxyResultInternalError
+	respBody := []byte("")
+	if resp.Body != nil {
+		respBody, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return ProxyResultInternalError
+		}
 	}
 
 	fmt.Fprint(w, string(respBody))
-	return ProxyResultOK
+	return resultCode
 }
