@@ -8,11 +8,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"azuki774/go-simple-auth-proxy/internal/client"
 )
 
+type Client interface {
+	SendToProxy(r *http.Request) (resp *http.Response, err error)
+}
 type Server struct {
 	ListenPort string
 	ProxyAddr  string // ex. http://example.com:1234
+	Client     Client
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
@@ -20,7 +26,7 @@ func (s *Server) Start(ctx context.Context) (err error) {
 
 	// TODO:
 	s.ListenPort = "8080"
-	s.ProxyAddr = "http://localhost:8888"
+	s.Client = &client.Client{ProxyAddr: "http://localhost:8888"}
 	///
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
