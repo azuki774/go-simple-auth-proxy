@@ -1,8 +1,13 @@
 package auth
 
 import (
+	"encoding/base64"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -22,9 +27,12 @@ type Authenticater struct {
 
 // 新しい cookie を生成
 func (a *Authenticater) GenerateCookie() *http.Cookie {
+	// base64 ( uuid v4 : dt.Unix() )
+	rowv := fmt.Sprintf("%s:%d", uuid.New().String(), time.Now().Unix())
+	v := base64.StdEncoding.EncodeToString([]byte(rowv))
 	cookie := &http.Cookie{
 		Name:  "token",
-		Value: "example_token_value", // TODO
+		Value: v,
 	}
 	return cookie
 }

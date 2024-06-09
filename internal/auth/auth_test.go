@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"encoding/base64"
+	"fmt"
 	"net/http"
 	"testing"
 )
@@ -61,6 +63,22 @@ func TestCookieManager_IsValidCookie(t *testing.T) {
 			if gotOk != tt.wantOk {
 				t.Errorf("CookieManager.IsValidCookie() = %v, want %v", gotOk, tt.wantOk)
 			}
+		})
+	}
+}
+
+// 乱数生成なので乱数で作って base64 -d するだけ
+func TestAuthenticater_GenerateCookie(t *testing.T) {
+	var Authenticater Authenticater
+
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("#%d", i), func(t *testing.T) {
+			c := Authenticater.GenerateCookie()
+			dec, err := base64.StdEncoding.DecodeString(c.Value)
+			if err != nil {
+				t.Errorf("TestAuthenticater_GenerateCookie = %v", err)
+			}
+			fmt.Printf("%s <-> %s\n", c.Value, dec)
 		})
 	}
 }
