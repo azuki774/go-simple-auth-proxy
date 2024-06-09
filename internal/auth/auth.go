@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -13,10 +13,11 @@ const (
 
 type Store interface {
 	CheckCookieValue(value string) bool
+	InsertCookieValue(value string) (err error)
 }
 
 type Authenticater struct {
-	authStore Store
+	AuthStore Store
 }
 
 // 新しい cookie を生成
@@ -32,10 +33,13 @@ func (a *Authenticater) GenerateCookie() *http.Cookie {
 func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	token, err := r.Cookie("token")
 	if err != nil {
-		return false, fmt.Errorf("unknown error: %w", err)
+		// unknown error: http: named cookie not present
+		// token の key がない場合もここに落ちるので、この場合は ok = false とする
+		slog.Debug("undetected cookie: token")
+		return false, nil
 	}
 	v := token.Value
-	ok = a.authStore.CheckCookieValue(v)
+	ok = a.AuthStore.CheckCookieValue(v)
 
 	return ok, nil
 }

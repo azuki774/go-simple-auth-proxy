@@ -8,9 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
-	"azuki774/go-simple-auth-proxy/internal/auth"
-	"azuki774/go-simple-auth-proxy/internal/client"
 )
 
 type Client interface {
@@ -24,19 +21,12 @@ type Authenticater interface {
 }
 type Server struct {
 	ListenPort    string
-	ProxyAddr     string // ex. http://example.com:1234
-	Client        Client
+	Client        Client // ex. http://example.com:1234
 	Authenticater Authenticater
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
 	slog.Info("server start")
-
-	// TODO:
-	s.ListenPort = "8080"
-	s.Client = &client.Client{ProxyAddr: "http://localhost:8888"}
-	s.Authenticater = &auth.Authenticater{}
-	///
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
 	http.HandleFunc("/", s.proxyHandler) // ハンドラを登録してウェブページを表示させる

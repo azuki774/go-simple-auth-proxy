@@ -47,7 +47,7 @@ func TestCookieManager_IsValidCookie(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &Authenticater{
-				authStore: tt.fields.authStore,
+				AuthStore: tt.fields.authStore,
 			}
 
 			// cookie いれる

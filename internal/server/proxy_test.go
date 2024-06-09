@@ -76,7 +76,6 @@ func TestServer_proxyMain(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Server{
 				ListenPort:    tt.fields.ListenPort,
-				ProxyAddr:     tt.fields.ProxyAddr,
 				Client:        tt.fields.Client,
 				Authenticater: tt.fields.Authenticater,
 			}
