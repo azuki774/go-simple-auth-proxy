@@ -12,16 +12,15 @@ import (
 
 type Server struct {
 	ListenPort string
-	MyAddr     string // http://localhost:8888
-	ProxyAddr  string // MyAddr -> ProxyAddr に置換
+	ProxyAddr  string // ex. http://example.com:1234
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
 	slog.Info("server start")
 
 	// TODO:
-	s.MyAddr = "localhost:8080"
-	s.ProxyAddr = "localhost:8888"
+	s.ListenPort = "8080"
+	s.ProxyAddr = "http://localhost:8888"
 	///
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)

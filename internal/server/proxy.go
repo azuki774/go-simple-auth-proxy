@@ -29,6 +29,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Proxy Response ==> Server Response
 	w.WriteHeader(resp.StatusCode)
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -42,7 +43,7 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 // proxy先にリクエストを投げる。呼び出し元で resp を閉じること。
 func (s *Server) sendToProxy(r *http.Request) (resp *http.Response, err error) {
 	baseurl := r.URL.String()
-	newurl := "http:" + "//" + s.ProxyAddr + baseurl
+	newurl := s.ProxyAddr + baseurl
 	slog.Info("newurl", "url", newurl)
 	client := &http.Client{}
 
