@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"azuki774/go-simple-auth-proxy/internal/auth"
+	"azuki774/go-simple-auth-proxy/internal/client"
+	"azuki774/go-simple-auth-proxy/internal/repository"
 	"azuki774/go-simple-auth-proxy/internal/server"
 	"context"
 	"log/slog"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -20,8 +24,15 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("start called")
-		s := server.Server{ListenPort: "8080"}
-		s.Start(context.Background())
+
+		// factory
+		srv := server.Server{
+			ListenPort:    "8080",
+			Client:        &client.Client{ProxyAddr: "http://localhost:8888"},
+			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}}},
+		}
+
+		srv.Start(context.Background())
 	},
 }
 

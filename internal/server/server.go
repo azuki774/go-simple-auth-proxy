@@ -10,18 +10,23 @@ import (
 	"syscall"
 )
 
+type Client interface {
+	SendToProxy(r *http.Request) (resp *http.Response, err error)
+}
+
+type Authenticater interface {
+	GenerateCookie() (*http.Cookie, error)
+	IsValidCookie(r *http.Request) (ok bool, err error)
+	CheckBasicAuth(r *http.Request) bool
+}
 type Server struct {
-	ListenPort string
-	ProxyAddr  string // ex. http://example.com:1234
+	ListenPort    string
+	Client        Client // ex. http://example.com:1234
+	Authenticater Authenticater
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
 	slog.Info("server start")
-
-	// TODO:
-	s.ListenPort = "8080"
-	s.ProxyAddr = "http://localhost:8888"
-	///
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
 	http.HandleFunc("/", s.proxyHandler) // ハンドラを登録してウェブページを表示させる
