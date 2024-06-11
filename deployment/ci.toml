@@ -1,0 +1,18 @@
+conf-version = 1 # 
+
+# For CI Sample
+basicauth = [""]
+server_port = "8080" # proxy server listen port
+proxy_address = "http://nginx-app:8080" # proxy_pass
+
+cookie_lifetime = 30 # min
+# if the rest of this cookie life time < cookie_refresh_time -> try to republish
+cookie_refresh_time = 15
+
+# inner (in memory) or redis
+# for redis example: "my-redis:6379"
+auth_store = "inner" 
+
+# This option only apply when auth_store = "inner".
+# It implies that the max size of inner cookie information.
+max_auth_store_size = 16
