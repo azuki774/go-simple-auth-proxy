@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"sync"
 
+	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 )
 
@@ -27,13 +28,34 @@ to quickly create a Cobra application.`,
 
 		// factory
 		srv := server.Server{
-			ListenPort:    "8080",
-			Client:        &client.Client{ProxyAddr: "http://localhost:8888"},
+			ListenPort:    startConfig.Port,
+			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
 			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}}},
 		}
 
 		srv.Start(context.Background())
 	},
+}
+
+type StartConfig struct {
+	Version           int    `toml:"conf-version"`
+	Port              string `toml:"server_port"`
+	ProxyAddress      string `toml:"proxy_address"`
+	CookieLifeTime    int    `toml:"cookie_lifetime"`
+	CookieRefreshTime int    `toml:"cookie_refresh_time"`
+	AuthStore         string `toml:"auth_store"`
+	MaxAuthStoreSize  int    `toml:"max_auth_store_size"`
+}
+
+var startConfig StartConfig
+var startConfigDir string
+
+func configLoad() (err error) {
+	_, err = toml.DecodeFile("./sample.toml", &startConfig)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func init() {
@@ -48,4 +70,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	startCmd.Flags().StringVarP(&startConfigDir, "config", "c", "config.toml", "config directory")
 }

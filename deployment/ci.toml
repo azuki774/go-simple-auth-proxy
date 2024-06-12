@@ -1,7 +1,10 @@
-conf-version = 1 # 
+conf-version = 1
 
 # For CI Sample
-basicauth = [""]
+
+# .htpasswd format
+basicauth = ["user:SAJ0dfalwUo1."] # for CI -- user:pass
+
 server_port = "8080" # proxy server listen port
 proxy_address = "http://nginx-app:8080" # proxy_pass
 
