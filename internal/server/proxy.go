@@ -43,6 +43,7 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	// To Proxy
 	resp, err := s.Client.SendToProxy(r)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError) // 500
 		return ProxyResultFetchNG
 	}
 	defer func() {
