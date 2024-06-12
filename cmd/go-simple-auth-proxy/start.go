@@ -7,8 +7,11 @@ import (
 	"azuki774/go-simple-auth-proxy/internal/server"
 	"context"
 	"log/slog"
+	"os"
+	"strings"
 	"sync"
 
+	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +28,55 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		slog.Info("start called")
 
+		if err := configLoad(); err != nil {
+			slog.Error("config error", "err", err)
+			os.Exit(1)
+		}
+		slog.Info("config loaded")
+
+		basicAuthLoad()
+		slog.Info("basic auth loaded")
+
 		// factory
 		srv := server.Server{
-			ListenPort:    "8080",
-			Client:        &client.Client{ProxyAddr: "http://localhost:8888"},
-			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}}},
+			ListenPort:    startConfig.Port,
+			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
+			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap}},
 		}
 
 		srv.Start(context.Background())
 	},
+}
+
+type StartConfig struct {
+	Version           int      `toml:"conf-version"`
+	Port              string   `toml:"server_port"`
+	BasicAuthList     []string `toml:"basicauth"`
+	ProxyAddress      string   `toml:"proxy_address"`
+	CookieLifeTime    int      `toml:"cookie_lifetime"`
+	CookieRefreshTime int      `toml:"cookie_refresh_time"`
+	AuthStore         string   `toml:"auth_store"`
+	MaxAuthStoreSize  int      `toml:"max_auth_store_size"`
+}
+
+var startConfig StartConfig
+var startConfigDir string
+var basicAuthMap map[string]string
+
+func configLoad() (err error) {
+	_, err = toml.DecodeFile(startConfigDir, &startConfig)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func basicAuthLoad() {
+	basicAuthMap = make(map[string]string)
+	for _, v := range startConfig.BasicAuthList {
+		userpass := strings.Split(v, ":")
+		basicAuthMap[userpass[0]] = userpass[1]
+	}
 }
 
 func init() {
@@ -48,4 +91,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	startCmd.Flags().StringVarP(&startConfigDir, "config", "c", "config.toml", "config directory")
 }

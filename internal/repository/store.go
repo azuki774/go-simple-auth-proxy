@@ -7,8 +7,9 @@ import (
 )
 
 type Store struct {
-	CookieStore []string
-	Mu          *sync.Mutex
+	CookieStore    []string
+	BasicAuthStore map[string]string
+	Mu             *sync.Mutex
 }
 
 // CookieStore に値が存在するかを確認する
@@ -24,4 +25,9 @@ func (s *Store) InsertCookieValue(value string) (err error) {
 	s.CookieStore = append(s.CookieStore, value)
 	slog.Info("add cookie store", "count", len(s.CookieStore))
 	return nil
+}
+
+func (s *Store) GetBasicAuthPassword(user string) string {
+	// if 'user' is not found, return ""
+	return s.BasicAuthStore[user]
 }

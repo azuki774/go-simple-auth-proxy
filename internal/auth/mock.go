@@ -1,7 +1,8 @@
 package auth
 
 type mockStore struct {
-	CheckCookieValueErr bool
+	CheckCookieValueErr        bool
+	ReturnGetBasicAuthPassword string
 }
 
 func (m *mockStore) CheckCookieValue(value string) bool {
@@ -10,4 +11,8 @@ func (m *mockStore) CheckCookieValue(value string) bool {
 
 func (m *mockStore) InsertCookieValue(value string) (err error) {
 	return nil
+}
+
+func (m *mockStore) GetBasicAuthPassword(user string) string {
+	return m.ReturnGetBasicAuthPassword
 }

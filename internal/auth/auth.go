@@ -7,18 +7,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-)
+	"golang.org/x/crypto/bcrypt"
 
-const (
-	// TODO
-	basicuser = "user"
-	basicpass = "pass"
+	"github.com/google/uuid"
 )
 
 type Store interface {
 	CheckCookieValue(value string) bool
 	InsertCookieValue(value string) (err error)
+	GetBasicAuthPassword(user string) string
 }
 
 type Authenticater struct {
@@ -60,10 +57,15 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 
 func (a *Authenticater) CheckBasicAuth(r *http.Request) bool {
 	// 認証情報取得
-	clientID, clientSecret, ok := r.BasicAuth()
+	reqUser, reqPass, ok := r.BasicAuth()
 	if !ok {
-		// 存在しなければ false
 		return false
 	}
-	return clientID == basicuser && clientSecret == basicpass
+	hashPass := a.AuthStore.GetBasicAuthPassword(reqUser) // 正しいパスワードのハッシュを取得
+	if err := bcrypt.CompareHashAndPassword([]byte(hashPass), []byte(reqPass)); err != nil {
+		slog.Info("basic auth mismatched", "user", reqUser)
+		return false
+	}
+
+	return true
 }
