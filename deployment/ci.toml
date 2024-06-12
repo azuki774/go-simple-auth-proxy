@@ -11,7 +11,8 @@ cookie_refresh_time = 15
 
 # inner (in memory) or redis
 # for redis example: "my-redis:6379"
-auth_store = "inner" 
+auth_store = "inner"
+# auth_store = "my-redis:6379"
 
 # This option only apply when auth_store = "inner".
 # It implies that the max size of inner cookie information.
