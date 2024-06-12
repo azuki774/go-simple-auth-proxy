@@ -3,10 +3,10 @@ conf-version = 1
 # For CI Sample
 
 # .htpasswd format
-basicauth = ["user:SAJ0dfalwUo1."] # for CI -- user:pass
+basicauth = ["user:$2a$10$etIpH1oxl4Ky5koV2AzyYe42caqi/tvtme/UTwxA7lHlB2loLDOte"] # for CI -- user:pass
 
 server_port = "8080" # proxy server listen port
-proxy_address = "http://nginx-app:8080" # proxy_pass
+proxy_address = "http://localhost:8888" # proxy_pass
 
 cookie_lifetime = 30 # min
 # if the rest of this cookie life time < cookie_refresh_time -> try to republish

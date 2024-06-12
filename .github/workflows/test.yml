@@ -40,7 +40,7 @@ jobs:
 
       - name: Running Server
         run: |
-          bin/go-simple-auth-proxy start &
+          bin/go-simple-auth-proxy start --config deployment/ci.toml &
           sleep 5s
 
       - name: Scenario 1 (No cookie or basicauth) - 401
