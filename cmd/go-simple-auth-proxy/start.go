@@ -41,7 +41,7 @@ to quickly create a Cobra application.`,
 		srv := server.Server{
 			ListenPort:    startConfig.Port,
 			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
-			Authenticater: &auth.Authenticater{AuthStore: &repository.Store{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap}},
+			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap, MaxAuthStoreSize: startConfig.MaxAuthStoreSize}},
 		}
 
 		srv.Start(context.Background())
