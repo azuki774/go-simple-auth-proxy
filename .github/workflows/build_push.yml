@@ -9,11 +9,8 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
-  build:
-    runs-on: ubuntu-latest
-
   build_and_push:
-    needs: ["build", "test"]
+    needs: ["test"]
     runs-on: ubuntu-latest
 
     steps:
