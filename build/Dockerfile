@@ -13,4 +13,5 @@ FROM gcr.io/distroless/static-debian12
 COPY --from=builder /src/bin/go-simple-auth-proxy /usr/local/bin/go-simple-auth-proxy
 COPY build/default.toml /etc/default.toml
 # Overwritting by volume in order to use your settings.
-ENTRYPOINT ["/usr/local/bin/go-simple-auth-proxy", "start", "-c", "/etc/default.toml"]
+ENTRYPOINT ["/usr/local/bin/go-simple-auth-proxy", "start"]
+CMD ["-c", "/etc/default.toml"]
