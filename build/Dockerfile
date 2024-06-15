@@ -9,7 +9,7 @@ COPY go.mod /src/go.mod
 WORKDIR /src
 RUN go mod tidy && mkdir bin && make bin
 
-FROM gcr.io/distroless/static-debian12
+FROM debian:latest
 COPY --from=builder /src/bin/go-simple-auth-proxy /usr/local/bin/go-simple-auth-proxy
 COPY build/default.toml /etc/default.toml
 # Overwritting by volume in order to use your settings.
