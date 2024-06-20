@@ -30,6 +30,10 @@ func (m *mockClient) SendToProxy(r *http.Request) (resp *http.Response, err erro
 	}, nil
 }
 
+func (m *mockClient) Ping() (err error) {
+	return m.err
+}
+
 func (m *mockAuthenticater) GenerateCookie() (*http.Cookie, error) {
 	cookie := &http.Cookie{
 		Name:  "token",

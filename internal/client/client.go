@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -36,4 +37,26 @@ func (c *Client) SendToProxy(r *http.Request) (resp *http.Response, err error) {
 	}
 
 	return resp, nil
+}
+
+// URI: GET / にアクセスして疎通があることを確認する
+// ステータスコードは問わない
+func (c *Client) Ping() (err error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("GET", c.ProxyAddr, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		io.Copy(io.Discard, resp.Body) // 読み捨てる
+		resp.Body.Close()
+	}()
+
+	return nil
 }
