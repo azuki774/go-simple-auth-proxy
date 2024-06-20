@@ -44,6 +44,13 @@ to quickly create a Cobra application.`,
 			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap, MaxAuthStoreSize: startConfig.MaxAuthStoreSize}},
 		}
 
+		// ready check
+		err := srv.CheckReadiness()
+		if err != nil {
+			os.Exit(1)
+		}
+		slog.Info("proxy ready ok")
+
 		srv.Start(context.Background())
 	},
 }

@@ -12,6 +12,7 @@ import (
 
 type Client interface {
 	SendToProxy(r *http.Request) (resp *http.Response, err error)
+	Ping() (err error)
 }
 
 type Authenticater interface {
@@ -57,5 +58,15 @@ func (s *Server) Start(ctx context.Context) (err error) {
 	}
 
 	slog.Info("http server close gracefully")
+	return nil
+}
+
+// Server が start しても問題ないコンフィグ設定になっているかを確認する
+func (s *Server) CheckReadiness() (err error) {
+	// proxy 先の正常性確認
+	if err := s.Client.Ping(); err != nil {
+		slog.Error("failed to proxyAddr", "err", err)
+		return err
+	}
 	return nil
 }
