@@ -17,7 +17,7 @@ type Client struct {
 func (c *Client) SendToProxy(r *http.Request) (resp *http.Response, err error) {
 	baseurl := r.URL.String()
 	newurl := c.ProxyAddr + baseurl
-	slog.Info("newurl", "url", newurl)
+	slog.Info("proxy to", "url", newurl)
 	client := &http.Client{}
 
 	reqBody, err := io.ReadAll(r.Body)

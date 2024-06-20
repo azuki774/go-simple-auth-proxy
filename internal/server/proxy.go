@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log/slog"
@@ -16,8 +17,10 @@ const ProxyResultFetchNG = ProxyResultCode("FetchNG")
 const ProxyResultInternalError = ProxyResultCode("InternalError")
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
-	resultCode := s.proxyMain(w, r)
-	slog.Info("proxy done", "resultCode", resultCode)
+	traceID := GenerateTraceID
+	ctx := context.WithValue(context.Background(), traceIdKey, traceID)
+	resultCode := s.proxyMain(w, r.WithContext(ctx))
+	slog.Info("proxy response", "uri", r.RequestURI, "resultCode", resultCode)
 }
 
 func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode ProxyResultCode) {
@@ -68,6 +71,7 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	if resp.Body != nil {
 		respBody, err = io.ReadAll(resp.Body)
 		if err != nil {
+			slog.Error("read error", "error", err)
 			return ProxyResultInternalError
 		}
 	}
