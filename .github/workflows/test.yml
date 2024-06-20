@@ -41,7 +41,7 @@ jobs:
 
       - name: Running Server
         run: |
-          bin/go-simple-auth-proxy start --config deployment/ci.toml &
+          nohup bin/go-simple-auth-proxy start --config deployment/ci.toml > server.log &
           sleep 5s
 
       - name: Scenario 1 (No cookie or basicauth) - 401
@@ -79,6 +79,8 @@ jobs:
           grep 'HTTP/1.1 200 OK' output.log
           grep '<title>Welcome to nginx!</title>' output.log
 
+      - name: Show Server log
+        run: cat server.log
     services:
       nginx-app:
         image: nginx:latest
