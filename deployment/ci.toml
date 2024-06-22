@@ -20,3 +20,6 @@ auth_store = "inner"
 # This option only apply when auth_store = "inner".
 # It implies that the max size of inner cookie information.
 max_auth_store_size = 16
+
+# Prometheus exporter port
+exporter_port = "9100"
