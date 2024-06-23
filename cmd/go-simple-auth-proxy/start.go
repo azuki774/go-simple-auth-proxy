@@ -42,6 +42,7 @@ to quickly create a Cobra application.`,
 			ListenPort:    startConfig.Port,
 			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
 			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap, MaxAuthStoreSize: startConfig.MaxAuthStoreSize}},
+			ExporterPort:  startConfig.ExporterPort,
 		}
 
 		// ready check
@@ -64,6 +65,8 @@ type StartConfig struct {
 	CookieRefreshTime int      `toml:"cookie_refresh_time"`
 	AuthStore         string   `toml:"auth_store"`
 	MaxAuthStoreSize  int      `toml:"max_auth_store_size"`
+
+	ExporterPort string `toml:"exporter_port"`
 }
 
 var startConfig StartConfig

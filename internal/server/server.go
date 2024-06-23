@@ -1,6 +1,7 @@
 package server
 
 import (
+	"azuki774/go-simple-auth-proxy/internal/metrics"
 	"context"
 	"fmt"
 	"log/slog"
@@ -24,10 +25,21 @@ type Server struct {
 	ListenPort    string
 	Client        Client // ex. http://example.com:1234
 	Authenticater Authenticater
+	ExporterPort  string
 }
 
 func (s *Server) Start(ctx context.Context) (err error) {
 	slog.Info("server start")
+
+	go func() { // prometheus exporter はエラーハンドリングしない
+		if s.ExporterPort == "" {
+			return
+		}
+		m := metrics.NewMetrics(s.ExporterPort)
+		slog.Info("start metrics server")
+		_ = m.Start()
+		slog.Info("close metrics server")
+	}()
 
 	addr := fmt.Sprintf(":%s", s.ListenPort)
 	http.HandleFunc("/", s.proxyHandler) // ハンドラを登録してウェブページを表示させる
