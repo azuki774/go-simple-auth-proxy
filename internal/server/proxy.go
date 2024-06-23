@@ -1,6 +1,7 @@
 package server
 
 import (
+	"azuki774/go-simple-auth-proxy/internal/metrics"
 	"context"
 	"fmt"
 	"io"
@@ -21,6 +22,9 @@ func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.WithValue(context.Background(), traceIdKey, traceID)
 	resultCode := s.proxyMain(w, r.WithContext(ctx))
 	slog.Info("proxy response", "uri", r.RequestURI, "resultCode", resultCode)
+
+	// metrics increment
+	metrics.AccessCounterVec.WithLabelValues(string(resultCode)).Add(1)
 }
 
 func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode ProxyResultCode) {

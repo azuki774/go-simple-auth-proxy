@@ -14,7 +14,7 @@ type MetricsServer struct {
 
 var (
 	AccessCounterVec = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "go-simple-auth-proxy",
+		Namespace: "go_simple_auth_proxy",
 		Name:      "access_count",
 		Help:      "access_count for auth response",
 	},
@@ -27,7 +27,7 @@ func NewMetrics(port string) *MetricsServer {
 }
 
 func (m *MetricsServer) Start() (err error) {
-	// prometheus.MustRegister(AccessCounterVec)
+	prometheus.MustRegister(AccessCounterVec)
 	http.Handle("/metrics", promhttp.Handler())
 	return http.ListenAndServe(fmt.Sprintf(":%s", m.ExporterPort), promhttp.Handler())
 }
