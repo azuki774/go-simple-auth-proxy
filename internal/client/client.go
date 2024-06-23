@@ -31,6 +31,9 @@ func (c *Client) SendToProxy(r *http.Request) (resp *http.Response, err error) {
 		return nil, err
 	}
 
+	// set meta to proxy
+	req.Header.Set("Content-Type", r.Header.Get("Content-Type"))
+
 	resp, err = client.Do(req)
 	if err != nil {
 		return nil, err
