@@ -31,7 +31,7 @@ func (a *Authenticater) GenerateCookie() (*http.Cookie, error) {
 		Name:  "token",
 		Value: v,
 	}
-	slog.Info("generate cookie", "value", v)
+
 	err := a.AuthStore.InsertCookieValue(v)
 	if err != nil {
 		slog.Error("failed to store new cookie", "err", err)
@@ -46,7 +46,6 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	if err != nil {
 		// unknown error: http: named cookie not present
 		// token の key がない場合もここに落ちるので、この場合は ok = false とする
-		slog.Info("undetected cookie: token")
 		return false, nil
 	}
 	v := token.Value

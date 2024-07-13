@@ -1,6 +1,7 @@
 package client
 
 import (
+	"azuki774/go-simple-auth-proxy/internal/telemetry"
 	"bytes"
 	"io"
 	"log/slog"
@@ -16,9 +17,12 @@ type Client struct {
 // r は元クライアントからもらったリクエスト
 // resp.Body は 呼び出し元でクローズすること
 func (c *Client) SendToProxy(r *http.Request) (resp *http.Response, err error) {
+	// Get request_id from http.Request
+	reqId := telemetry.GetRequestIDFromCtx(r.Context())
+
 	baseurl := r.URL.String()
 	newurl := c.ProxyAddr + baseurl
-	slog.Info("proxy to", "url", newurl)
+	slog.Info("proxy to", "request_id", reqId, "url", newurl)
 	client := &http.Client{}
 
 	reqBody, err := io.ReadAll(r.Body)
