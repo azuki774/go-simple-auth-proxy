@@ -2,6 +2,7 @@ package server
 
 import (
 	"azuki774/go-simple-auth-proxy/internal/metrics"
+	"azuki774/go-simple-auth-proxy/internal/telemetry"
 	"context"
 	"fmt"
 	"io"
@@ -18,21 +19,24 @@ const ProxyResultFetchNG = ProxyResultCode("FetchNG")
 const ProxyResultInternalError = ProxyResultCode("InternalError")
 
 func (s *Server) proxyHandler(w http.ResponseWriter, r *http.Request) {
-	traceID := GenerateTraceID
-	ctx := context.WithValue(context.Background(), traceIdKey, traceID)
+	requestID := telemetry.GetRequestID(r)
+	ctx := context.WithValue(context.Background(), telemetry.RequestIDKey, requestID)
 	resultCode := s.proxyMain(w, r.WithContext(ctx))
-	slog.Info("proxy response", "uri", r.RequestURI, "resultCode", resultCode)
+	slog.Info("proxy response", "request_id", requestID, "uri", r.RequestURI, "resultCode", resultCode)
 
 	// metrics increment
 	metrics.AccessCounterVec.WithLabelValues(string(resultCode)).Add(1)
 }
 
 func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode ProxyResultCode) {
+	// Get request_id from http.Request
+	reqId := telemetry.GetRequestIDFromCtx(r.Context())
+
 	// Get Cookie
 	// Cookie Check
 	cookieOk, err := s.Authenticater.IsValidCookie(r)
 	if err != nil {
-		slog.Error("get cookie", "error", err)
+		slog.Error("get cookie", "request_id", reqId, "error", err)
 		return ProxyResultInternalError
 	}
 
@@ -69,13 +73,14 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 			return ProxyResultInternalError
 		}
 		http.SetCookie(w, cookie)
+		slog.Info("generate cookie", "request_id", reqId)
 	}
 
 	respBody := []byte("")
 	if resp.Body != nil {
 		respBody, err = io.ReadAll(resp.Body)
 		if err != nil {
-			slog.Error("read error", "error", err)
+			slog.Error("read error", "request_id", reqId, "error", err)
 			return ProxyResultInternalError
 		}
 	}
