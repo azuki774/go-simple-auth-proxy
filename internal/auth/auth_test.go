@@ -2,6 +2,7 @@ package auth
 
 import (
 	"azuki774/go-simple-auth-proxy/internal/timeutil"
+	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -119,6 +120,66 @@ func TestAuthenticater_GenerateCookie(t *testing.T) {
 			if !reflect.DeepEqual(gottoken, tt.wantCookieValue) {
 				t.Errorf("Authenticater.GenerateCookie() = %v, want %v", gottoken, tt.wantCookieValue)
 
+			}
+		})
+	}
+}
+
+func TestAuthenticater_IsValidCookie(t *testing.T) {
+	type fields struct {
+		AuthStore      Store
+		Issuer         string
+		ExpirationTime int64
+		HmacSecret     string
+	}
+	type args struct {
+		r           *http.Request
+		tokenString string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args // cookie データは後で入れる
+		wantOk  bool
+		wantErr bool
+	}{
+		{
+			name: "ok",
+			fields: fields{
+				AuthStore:      &mockStore{},
+				Issuer:         "testprogram",
+				ExpirationTime: 999, // now: 1721142000 -> 1721142999
+				HmacSecret:     "super_sugoi_secret",
+			},
+			args: args{
+				r:           &http.Request{},
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0cHJvZ3JhbSIsImV4cCI6MTcyMTE0Mjk5OX0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
+			},
+			wantOk:  true,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &Authenticater{
+				AuthStore:      tt.fields.AuthStore,
+				Issuer:         tt.fields.Issuer,
+				ExpirationTime: tt.fields.ExpirationTime,
+				HmacSecret:     tt.fields.HmacSecret,
+			}
+
+			// cookie いれる
+			tt.args.r.Header = map[string][]string{
+				"Cookie": {fmt.Sprintf("%s=%s", CookieJWTName, tt.args.tokenString)},
+			}
+
+			gotOk, err := a.IsValidCookie(tt.args.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Authenticater.IsValidCookie() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotOk != tt.wantOk {
+				t.Errorf("Authenticater.IsValidCookie() = %v, want %v", gotOk, tt.wantOk)
 			}
 		})
 	}

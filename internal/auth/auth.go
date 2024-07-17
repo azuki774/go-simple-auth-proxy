@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const CookieJWTName = "jwt"
+
 type Store interface {
 	GetBasicAuthPassword(user string) string
 }
@@ -32,7 +34,7 @@ func (a *Authenticater) GenerateCookie() (*http.Cookie, error) {
 		return nil, fmt.Errorf("failed to generate JWT access token: %w", err)
 	}
 	cookie := &http.Cookie{
-		Name:  "jwt",
+		Name:  CookieJWTName,
 		Value: tokenString,
 	}
 
@@ -40,8 +42,38 @@ func (a *Authenticater) GenerateCookie() (*http.Cookie, error) {
 }
 
 func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
-	// TODO
-	return false, nil
+	tokenCookie, err := r.Cookie(CookieJWTName)
+	if err != nil {
+		// unknown error: http: named cookie not present
+		// token の key がない場合もここに落ちるので、この場合は ok = false とする
+		return false, nil
+	}
+
+	tokenString := tokenCookie.Value
+	fmt.Println(tokenString) // FOR TEST
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return a.HmacSecret, nil
+	})
+	if err != nil {
+		// TODO: 今のままだとここに落ちてしまう
+		return false, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		fmt.Println(claims["exp"], claims["iss"])
+		// TODO: Issuer が正しいか
+		// TODO: 有効期限が切れていないか
+	} else {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (a *Authenticater) CheckBasicAuth(r *http.Request) bool {
