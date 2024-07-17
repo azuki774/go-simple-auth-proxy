@@ -66,7 +66,7 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	// Proxy Response ==> Server Response
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 
-	if resultCode != ProxyResultCookieOK { // Cookie OK 以外での認証OK出会った場合は Cookie 生成する
+	if resultCode != ProxyResultCookieOK { // Cookie OK 以外での認証OKだった場合は Cookie 生成する
 		// Generate Cookie
 		cookie, err := s.Authenticater.GenerateCookie()
 		if err != nil {
