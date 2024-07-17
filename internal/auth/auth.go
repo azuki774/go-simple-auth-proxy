@@ -1,9 +1,12 @@
 package auth
 
 import (
+	"azuki774/go-simple-auth-proxy/internal/timeutil"
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -12,12 +15,28 @@ type Store interface {
 }
 
 type Authenticater struct {
-	AuthStore Store
+	AuthStore      Store
+	Issuer         string // use JWT Payload
+	ExpirationTime int64
+	HmacSecret     string
 }
 
 func (a *Authenticater) GenerateCookie() (*http.Cookie, error) {
-	// TODO
-	return nil, nil
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp": timeutil.NowFunc().Unix() + a.ExpirationTime,
+		"iss": a.Issuer,
+	})
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(a.HmacSecret))
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate JWT access token: %w", err)
+	}
+	cookie := &http.Cookie{
+		Name:  "jwt",
+		Value: tokenString,
+	}
+
+	return cookie, nil
 }
 
 func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {

@@ -4,7 +4,7 @@ go 1.21.0
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/google/uuid v1.6.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/prometheus/client_golang v1.19.1
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.24.0
