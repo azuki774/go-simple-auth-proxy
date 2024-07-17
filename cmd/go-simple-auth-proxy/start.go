@@ -41,7 +41,7 @@ to quickly create a Cobra application.`,
 		srv := server.Server{
 			ListenPort:    startConfig.Port,
 			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
-			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap, MaxAuthStoreSize: startConfig.MaxAuthStoreSize}},
+			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap}},
 			ExporterPort:  startConfig.ExporterPort,
 		}
 
@@ -57,14 +57,11 @@ to quickly create a Cobra application.`,
 }
 
 type StartConfig struct {
-	Version           int      `toml:"conf-version"`
-	Port              string   `toml:"server_port"`
-	BasicAuthList     []string `toml:"basicauth"`
-	ProxyAddress      string   `toml:"proxy_address"`
-	CookieLifeTime    int      `toml:"cookie_lifetime"`
-	CookieRefreshTime int      `toml:"cookie_refresh_time"`
-	AuthStore         string   `toml:"auth_store"`
-	MaxAuthStoreSize  int      `toml:"max_auth_store_size"`
+	Version        int      `toml:"conf-version"`
+	Port           string   `toml:"server_port"`
+	BasicAuthList  []string `toml:"basicauth"`
+	ProxyAddress   string   `toml:"proxy_address"`
+	CookieLifeTime int      `toml:"cookie_lifetime"`
 
 	ExporterPort string `toml:"exporter_port"`
 }
