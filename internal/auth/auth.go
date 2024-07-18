@@ -58,10 +58,9 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 		}
 
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return a.HmacSecret, nil
+		return []byte(a.HmacSecret), nil
 	})
 	if err != nil {
-		// TODO: 今のままだとここに落ちてしまう
 		return false, err
 	}
 

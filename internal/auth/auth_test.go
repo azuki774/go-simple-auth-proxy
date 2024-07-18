@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const testBaseTime = 1721142000
+
 func TestAuthenticater_CheckBasicAuth(t *testing.T) {
 	type fields struct {
 		AuthStore Store
@@ -89,19 +91,20 @@ func TestAuthenticater_GenerateCookie(t *testing.T) {
 			fields: fields{
 				AuthStore:      &mockStore{},
 				Issuer:         "testprogram",
-				ExpirationTime: 999, // now: 1721142000 -> 1721142999
+				ExpirationTime: 999, // now: testBaseTime = 1721142000 -> 1721142999
 				HmacSecret:     "super_sugoi_secret",
 			},
 			// {"alg":"HS256","typ":"JWT"} -> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-			// {"exp":1721142999,"iss":"testprogram"} -> eyJpc3MiOiJ0ZXN0cHJvZ3JhbSIsImV4cCI6MTcyMTE0Mjk5OX0
-			// sign (super_sugoi_secret): eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0cHJvZ3JhbSIsImV4cCI6MTcyMTE0Mjk5OX0 => x9E6MEisgT3eTTZXMCaK0BGVdeVPuuN1ZPsP7w89eiE
-			wantCookieValue: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0cHJvZ3JhbSIsImV4cCI6MTcyMTE0Mjk5OX0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
+			// {"exp":1721142999,"iss":"testprogram"} -> eyJleHAiOjE3MjExNDI5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0
+			// sign (super_sugoi_secret): eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjExNDI5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0 => MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg
+			wantCookieValue: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjExNDI5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
 			wantErr:         false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			timeutil.NowFunc = func() time.Time { return time.Unix(1721142000, 0) }
+			timeutil.NowFunc = func() time.Time { return time.Unix(testBaseTime, 0) }
+
 			a := &Authenticater{
 				AuthStore:      tt.fields.AuthStore,
 				Issuer:         tt.fields.Issuer,
@@ -142,25 +145,29 @@ func TestAuthenticater_IsValidCookie(t *testing.T) {
 		args    args // cookie データは後で入れる
 		wantOk  bool
 		wantErr bool
+		nowTime time.Time
 	}{
 		{
 			name: "ok",
 			fields: fields{
-				AuthStore:      &mockStore{},
-				Issuer:         "testprogram",
-				ExpirationTime: 999, // now: 1721142000 -> 1721142999
-				HmacSecret:     "super_sugoi_secret",
+				AuthStore:  &mockStore{},
+				Issuer:     "testprogram",
+				HmacSecret: "super_sugoi_secret",
 			},
 			args: args{
 				r:           &http.Request{},
-				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ0ZXN0cHJvZ3JhbSIsImV4cCI6MTcyMTE0Mjk5OX0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjExNDI5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
 			},
 			wantOk:  true,
 			wantErr: false,
+			nowTime: time.Unix(testBaseTime-1000, 0),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// 時間設定する
+			timeutil.NowFunc = func() time.Time { return tt.nowTime }
+
 			a := &Authenticater{
 				AuthStore:      tt.fields.AuthStore,
 				Issuer:         tt.fields.Issuer,
