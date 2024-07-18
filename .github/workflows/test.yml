@@ -81,6 +81,7 @@ jobs:
 
       - name: Show Server log
         run: cat server.log
+        if: ${{ ! cancelled() }}
     services:
       nginx-app:
         image: nginx:latest
