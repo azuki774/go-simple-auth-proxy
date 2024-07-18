@@ -2,11 +2,12 @@ package auth
 
 import (
 	"azuki774/go-simple-auth-proxy/internal/timeutil"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -61,13 +62,17 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 		return []byte(a.HmacSecret), nil
 	})
 	if err != nil {
+		// token expired も含む
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			slog.Info("token expired")
+			return false, nil
+		}
 		return false, err
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		// TODO: Issuer が正しいか検証
 		fmt.Println(claims["exp"], claims["iss"])
-		// TODO: Issuer が正しいか
-		// TODO: 有効期限が切れていないか
 	} else {
 		return false, err
 	}

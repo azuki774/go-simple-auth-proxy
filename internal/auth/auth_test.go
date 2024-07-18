@@ -145,7 +145,6 @@ func TestAuthenticater_IsValidCookie(t *testing.T) {
 		args    args // cookie データは後で入れる
 		wantOk  bool
 		wantErr bool
-		nowTime time.Time
 	}{
 		{
 			name: "ok",
@@ -156,18 +155,42 @@ func TestAuthenticater_IsValidCookie(t *testing.T) {
 			},
 			args: args{
 				r:           &http.Request{},
-				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjExNDI5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0.MJd9moHsqxrUs3ujOUcwR6AEQNZzbqj8yOudrHfCBpg",
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5OTksImlzcyI6InRlc3Rwcm9ncmFtIn0.JQddrOcvLCTzKfPG3oCqwSe0LLcI-xcoIbrZ-DKbbJ4",
 			},
 			wantOk:  true,
 			wantErr: false,
-			nowTime: time.Unix(testBaseTime-1000, 0),
+		},
+		{
+			name: "expired",
+			fields: fields{
+				AuthStore:  &mockStore{},
+				Issuer:     "testprogram",
+				HmacSecret: "super_sugoi_secret",
+			},
+			args: args{
+				r:           &http.Request{},
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5LCJpc3MiOiJ0ZXN0cHJvZ3JhbSJ9.5Xx7MYFjl60ASmTChS_SROGt9Y9-4Al6ZjcWHlQGGp8",
+			},
+			wantOk:  false,
+			wantErr: false,
+		},
+		{
+			name: "invalid sign",
+			fields: fields{
+				AuthStore:  &mockStore{},
+				Issuer:     "testprogram",
+				HmacSecret: "super_sugoi_secret",
+			},
+			args: args{
+				r:           &http.Request{},
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5LCJpc3MiOiJ0ZXN0cHJvZ3JhbSJ9.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+			},
+			wantOk:  false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// 時間設定する
-			timeutil.NowFunc = func() time.Time { return tt.nowTime }
-
 			a := &Authenticater{
 				AuthStore:      tt.fields.AuthStore,
 				Issuer:         tt.fields.Issuer,
