@@ -71,8 +71,10 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		// TODO: Issuer が正しいか検証
-		fmt.Println(claims["exp"], claims["iss"])
+		if claims["iss"] != a.Issuer {
+			slog.Info("issuer mismatched")
+			return false, nil
+		}
 	} else {
 		return false, err
 	}

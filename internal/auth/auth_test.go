@@ -188,6 +188,21 @@ func TestAuthenticater_IsValidCookie(t *testing.T) {
 			wantOk:  false,
 			wantErr: true,
 		},
+		{
+			name: "issuer mismatched",
+			fields: fields{
+				AuthStore:  &mockStore{},
+				Issuer:     "testprogram",
+				HmacSecret: "super_sugoi_secret",
+			},
+			args: args{
+				r: &http.Request{},
+				// this issuer is 'another_issuer'
+				tokenString: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk5OTk5OTk5OTksImlzcyI6ImFub3RoZXJfaXNzdWVyIn0.f5nLljHgEErBqaNX89fzI1vP1MHWcgbXABfZBOFzyjs",
+			},
+			wantOk:  false,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
