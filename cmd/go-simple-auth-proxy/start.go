@@ -6,6 +6,7 @@ import (
 	"azuki774/go-simple-auth-proxy/internal/repository"
 	"azuki774/go-simple-auth-proxy/internal/server"
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -14,6 +15,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/spf13/cobra"
 )
+
+const useConfVersion = 2 // def conf-version for config toml
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -34,15 +37,27 @@ to quickly create a Cobra application.`,
 		}
 		slog.Info("config loaded")
 
+		// get secret
+		secret := os.Getenv("HMAC_SECRET")
+		if secret == "" {
+			slog.Error("HMAC_SECRET is not set")
+			os.Exit(1)
+		}
+
 		basicAuthLoad()
 		slog.Info("basic auth loaded")
 
 		// factory
 		srv := server.Server{
-			ListenPort:    startConfig.Port,
-			Client:        &client.Client{ProxyAddr: startConfig.ProxyAddress},
-			Authenticater: &auth.Authenticater{AuthStore: &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap}},
-			ExporterPort:  startConfig.ExporterPort,
+			ListenPort: startConfig.Port,
+			Client:     &client.Client{ProxyAddr: startConfig.ProxyAddress},
+			Authenticater: &auth.Authenticater{
+				AuthStore:      &repository.StoreInMemory{Mu: &sync.Mutex{}, BasicAuthStore: basicAuthMap},
+				Issuer:         startConfig.IssuerName,
+				ExpirationTime: int64(startConfig.CookieLifeTime * 60), // min -> sec
+				HmacSecret:     secret,
+			},
+			ExporterPort: startConfig.ExporterPort,
 		}
 
 		// ready check
@@ -58,6 +73,7 @@ to quickly create a Cobra application.`,
 
 type StartConfig struct {
 	Version        int      `toml:"conf-version"`
+	IssuerName     string   `toml:"isser_name"`
 	Port           string   `toml:"server_port"`
 	BasicAuthList  []string `toml:"basicauth"`
 	ProxyAddress   string   `toml:"proxy_address"`
@@ -75,6 +91,12 @@ func configLoad() (err error) {
 	if err != nil {
 		return err
 	}
+
+	// Version check
+	if startConfig.Version != useConfVersion {
+		return fmt.Errorf("conf-version must be 2 in this version")
+	}
+
 	return nil
 }
 

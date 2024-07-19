@@ -1,6 +1,7 @@
 conf-version = 2
 
 # For CI Sample
+isser_name = "forci" # your isser name
 
 # .htpasswd format
 basicauth = ["user:$2a$10$etIpH1oxl4Ky5koV2AzyYe42caqi/tvtme/UTwxA7lHlB2loLDOte"] # for CI -- user:pass
@@ -12,3 +13,5 @@ cookie_lifetime = 43200 # min
 
 # Prometheus exporter port
 exporter_port = "9100"
+
+## You must set environment ${HMAC_SECRET}
