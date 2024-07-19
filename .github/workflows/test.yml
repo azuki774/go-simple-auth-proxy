@@ -43,6 +43,8 @@ jobs:
         run: |
           nohup bin/go-simple-auth-proxy start --config deployment/ci.toml > server.log &
           sleep 5s
+        env:
+          HMAC_SECRET: mokomoko
 
       - name: Scenario 1 (No cookie or basicauth) - 401
         run: |
@@ -81,6 +83,7 @@ jobs:
 
       - name: Show Server log
         run: cat server.log
+        if: ${{ ! cancelled() }}
     services:
       nginx-app:
         image: nginx:latest
