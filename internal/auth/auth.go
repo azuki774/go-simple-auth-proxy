@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -51,7 +52,6 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	}
 
 	tokenString := tokenCookie.Value
-	fmt.Println(tokenString) // FOR TEST
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -64,7 +64,7 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 	if err != nil {
 		// token expired も含む
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			slog.Info("token expired")
+			slog.Info("token expired", "jwt", maskedJwt(tokenString))
 			return false, nil
 		}
 		return false, err
@@ -72,7 +72,7 @@ func (a *Authenticater) IsValidCookie(r *http.Request) (ok bool, err error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		if claims["iss"] != a.Issuer {
-			slog.Info("issuer mismatched")
+			slog.Info("issuer mismatched", "jwt", maskedJwt(tokenString))
 			return false, nil
 		}
 	} else {
@@ -95,4 +95,13 @@ func (a *Authenticater) CheckBasicAuth(r *http.Request) bool {
 	}
 
 	return true
+}
+
+func maskedJwt(tokenString string) string {
+	splitsToken := strings.Fields(tokenString) // 'AAA.BBB.CCC' -> ['AAA','BBB','CCC']
+	if len(splitsToken) != 3 {
+		return tokenString
+	}
+	splitsToken[2] = "***"
+	return fmt.Sprintf("%s.%s.%s", splitsToken[0], splitsToken[1], splitsToken[2])
 }
