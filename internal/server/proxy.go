@@ -13,7 +13,7 @@ import (
 type ProxyResultCode string
 
 const ProxyResultCookieOK = ProxyResultCode("CookieOK")
-const ProxyResultBasicAuthOK = ProxyResultCode("BasicAuthOK")
+const ProxyResultBasicAuthOK = ProxyResultCode("BasicAuthOK") // note: CookieOK, BasicAuthOK -> CookieOK
 const ProxyResultBasicAuthNG = ProxyResultCode("BasicAuthNG")
 const ProxyResultFetchNG = ProxyResultCode("FetchNG")
 const ProxyResultInternalError = ProxyResultCode("InternalError")
@@ -40,9 +40,12 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 		return ProxyResultInternalError
 	}
 
+	// BasicAuth Check
+	basicAuthOK := s.Authenticater.CheckBasicAuth(r)
+
 	if cookieOk {
 		resultCode = ProxyResultCookieOK
-	} else if s.Authenticater.CheckBasicAuth(r) { // BasicAuth Check
+	} else if basicAuthOK {
 		resultCode = ProxyResultBasicAuthOK
 	} else {
 		// all NG
@@ -66,7 +69,7 @@ func (s *Server) proxyMain(w http.ResponseWriter, r *http.Request) (resultCode P
 	// Proxy Response ==> Server Response
 	w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
 
-	if resultCode != ProxyResultCookieOK { // Cookie OK 以外での認証OKだった場合は Cookie 生成する
+	if basicAuthOK { // BasicAuth での認証OKだった場合は Cookie 生成する
 		// Generate Cookie
 		cookie, err := s.Authenticater.GenerateCookie()
 		if err != nil {
